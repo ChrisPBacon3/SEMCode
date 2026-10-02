@@ -6,7 +6,7 @@
 
     <groupId>com.napier.sem</groupId>
     <artifactId>SEMCode</artifactId>
-    <version>0.1.0.2</version>
+    <version>0.1.0.3</version>
 
     <properties>
         <maven.compiler.source>27</maven.compiler.source>
@@ -40,7 +40,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
-                    <finalName>semApp-0.1.0.2</finalName>
+                    <finalName>semApp-0.1.0.3</finalName>
                     <archive>
                         <manifest>
                             <mainClass>com.napier.sem.Main</mainClass>
