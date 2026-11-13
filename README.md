@@ -4,3 +4,4 @@
 [![LICENSE](https://img.shields.io/github/license/ChrisPBacon3/SEMCode.svg?style=flat-square)](https://github.com/ChrisPBacon3/SEMCode/blob/main/LICENSE)
 [![Releases](https://img.shields.io/github/release/ChrisPBacon3/SEMCode/all.svg?style=flat-square)](https://github.com/ChrisPBacon3/SEMCode/releases)
 ![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/ChrisPBacon3/SEMCode/main.yml?branch=develop)
+[![codecov](https://codecov.io/github/ChrisPBacon3/SEMCode/graph/badge.svg?token=WLPEEVFVHX)](https://codecov.io/github/ChrisPBacon3/SEMCode)
