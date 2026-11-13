@@ -1,6 +1,7 @@
 package com.napier.sem;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Main
 {
@@ -136,6 +137,74 @@ public class Main
         }
     }
 
+    /**
+     * Gets the current salaries of all employees with a given role (title).
+     * @param title The role to get salaries for.
+     * @return A list of employees and salaries, or null if there is an error.
+     */
+    public ArrayList<Employee> getSalariesByRole(String title)
+    {
+        try
+        {
+            String strSelect =
+                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary "
+                            + "FROM employees, salaries, titles "
+                            + "WHERE employees.emp_no = salaries.emp_no "
+                            + "AND employees.emp_no = titles.emp_no "
+                            + "AND salaries.to_date = '9999-01-01' "
+                            + "AND titles.to_date = '9999-01-01' "
+                            + "AND titles.title = ? "
+                            + "ORDER BY employees.emp_no ASC";
+            PreparedStatement pstmt = con.prepareStatement(strSelect);
+            pstmt.setString(1, title);
+            ResultSet rset = pstmt.executeQuery();
+
+            ArrayList<Employee> employees = new ArrayList<Employee>();
+            while (rset.next())
+            {
+                Employee emp = new Employee();
+                emp.emp_no     = rset.getInt("emp_no");
+                emp.first_name = rset.getString("first_name");
+                emp.last_name  = rset.getString("last_name");
+                emp.salary     = rset.getInt("salary");
+                employees.add(emp);
+            }
+            return employees;
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get salaries by role");
+            return null;
+        }
+    }
+
+    /**
+     * Prints a list of employees and their salaries.
+     * @param employees The list of employees to print.
+     */
+    public void printSalaries(ArrayList<Employee> employees)
+    {
+        // Check employees is not null
+        if (employees == null)
+        {
+            System.out.println("No employees");
+            return;
+        }
+        // Print header
+        System.out.println(String.format("%-10s %-15s %-20s %-8s", "Emp No", "First Name", "Last Name", "Salary"));
+        // Loop over all employees in the list
+        for (Employee emp : employees)
+        {
+            if (emp == null)
+                continue;
+            String emp_string =
+                    String.format("%-10s %-15s %-20s %-8s",
+                            emp.emp_no, emp.first_name, emp.last_name, emp.salary);
+            System.out.println(emp_string);
+        }
+    }
+
     public static void main(String[] args)
     {
         // Create new Application
@@ -143,10 +212,12 @@ public class Main
 
         // Connect to database
         a.connect();
-        // Get Employee
-        Employee emp = a.getEmployee(255530);
-        // Display results
-        a.displayEmployee(emp);
+
+        // Get salaries for a role
+        ArrayList<Employee> employees = a.getSalariesByRole("Engineer");
+
+        // Print the salaries
+        a.printSalaries(employees);
 
         // Disconnect from database
         a.disconnect();
