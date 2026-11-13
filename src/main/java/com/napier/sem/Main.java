@@ -12,27 +12,27 @@ public class Main
 
     /**
      * Base SQL for a full employee record: title, salary, department and department manager.
+     * LEFT JOINs are used so an employee with no title, salary or department is still found.
      */
     private static final String EMPLOYEE_SELECT =
             "SELECT e.emp_no, e.first_name, e.last_name, t.title, s.salary, "
                     + "       d.dept_no, d.dept_name, "
                     + "       m.emp_no AS mgr_no, m.first_name AS mgr_first, m.last_name AS mgr_last "
                     + "FROM employees e "
-                    + "JOIN titles t        ON t.emp_no = e.emp_no "
-                    + "JOIN salaries s      ON s.emp_no = e.emp_no "
-                    + "JOIN dept_emp de     ON de.emp_no = e.emp_no "
-                    + "JOIN departments d   ON d.dept_no = de.dept_no "
-                    + "JOIN dept_manager dm ON dm.dept_no = de.dept_no "
-                    + "JOIN employees m     ON m.emp_no = dm.emp_no "
-                    + "WHERE t.to_date  = '9999-01-01' "
-                    + "  AND s.to_date  = '9999-01-01' "
-                    + "  AND de.to_date = '9999-01-01' "
-                    + "  AND dm.to_date = '9999-01-01' ";
+                    + "LEFT JOIN titles t        ON t.emp_no = e.emp_no AND t.to_date = '9999-01-01' "
+                    + "LEFT JOIN salaries s      ON s.emp_no = e.emp_no AND s.to_date = '9999-01-01' "
+                    + "LEFT JOIN dept_emp de     ON de.emp_no = e.emp_no AND de.to_date = '9999-01-01' "
+                    + "LEFT JOIN departments d   ON d.dept_no = de.dept_no "
+                    + "LEFT JOIN dept_manager dm ON dm.dept_no = de.dept_no AND dm.to_date = '9999-01-01' "
+                    + "LEFT JOIN employees m     ON m.emp_no = dm.emp_no "
+                    + "WHERE 1 = 1 ";
 
     /**
      * Connect to the MySQL database.
+     * @param location The host and port of the database, for example localhost:33060.
+     * @param delay The time in milliseconds to wait before each connection attempt.
      */
-    public void connect()
+    public void connect(String location, int delay)
     {
         try
         {
@@ -52,9 +52,10 @@ public class Main
             try
             {
                 // Wait a bit for db to start
-                Thread.sleep(30000);
+                Thread.sleep(delay);
                 // Connect to database
-                con = DriverManager.getConnection("jdbc:mysql://db:3306/employees?allowPublicKeyRetrieval=true&useSSL=false", "root", "example");
+                con = DriverManager.getConnection("jdbc:mysql://" + location
+                        + "/employees?allowPublicKeyRetrieval=true&useSSL=false", "root", "example");
                 System.out.println("Successfully connected");
                 break;
             }
@@ -135,7 +136,7 @@ public class Main
     }
 
     /**
-     * Builds an Employee, with department and manager, from the first row of a result set.
+     * Builds an Employee, with department and manager where they exist, from the first row of a result set.
      * @param rset The result set from EMPLOYEE_SELECT.
      * @return The employee, or null if the result set is empty.
      */
@@ -144,15 +145,25 @@ public class Main
         if (!rset.next())
             return null;
 
-        Employee mgr = new Employee();
-        mgr.emp_no = rset.getInt("mgr_no");
-        mgr.first_name = rset.getString("mgr_first");
-        mgr.last_name = rset.getString("mgr_last");
+        Employee mgr = null;
+        int mgrNo = rset.getInt("mgr_no");
+        if (!rset.wasNull())
+        {
+            mgr = new Employee();
+            mgr.emp_no = mgrNo;
+            mgr.first_name = rset.getString("mgr_first");
+            mgr.last_name = rset.getString("mgr_last");
+        }
 
-        Department dept = new Department();
-        dept.dept_no = rset.getString("dept_no");
-        dept.dept_name = rset.getString("dept_name");
-        dept.manager = mgr;
+        Department dept = null;
+        String deptNo = rset.getString("dept_no");
+        if (deptNo != null)
+        {
+            dept = new Department();
+            dept.dept_no = deptNo;
+            dept.dept_name = rset.getString("dept_name");
+            dept.manager = mgr;
+        }
 
         Employee emp = new Employee();
         emp.emp_no = rset.getInt("emp_no");
@@ -355,6 +366,31 @@ public class Main
     }
 
     /**
+     * Adds a new employee to the database.
+     * @param emp The employee to add. Needs emp_no, first_name and last_name.
+     */
+    public void addEmployee(Employee emp)
+    {
+        if (emp == null)
+            return;
+        try
+        {
+            PreparedStatement pstmt = con.prepareStatement(
+                    "INSERT INTO employees (emp_no, first_name, last_name, birth_date, gender, hire_date) "
+                            + "VALUES (?, ?, ?, '9999-01-01', 'M', '9999-01-01')");
+            pstmt.setInt(1, emp.emp_no);
+            pstmt.setString(2, emp.first_name);
+            pstmt.setString(3, emp.last_name);
+            pstmt.executeUpdate();
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to add employee");
+        }
+    }
+
+    /**
      * Prints a list of employees and their salaries.
      * @param employees The list of employees to print.
      */
@@ -382,21 +418,22 @@ public class Main
 
     public static void main(String[] args)
     {
-        // Create new Application
+        // Create new Application and connect to database
         Main a = new Main();
 
-        // Connect to database
-        a.connect();
+        if (args.length < 1)
+        {
+            a.connect("localhost:33060", 30000);
+        }
+        else
+        {
+            a.connect(args[0], Integer.parseInt(args[1]));
+        }
 
-        // Get an employee by ID and by name
-        a.displayEmployee(a.getEmployee(255530));
-        a.displayEmployee(a.getEmployee("Ronghao", "Garigliano"));
-
-        // Get salaries for a department
-        Department dept = a.getDepartment("Sales");
+        Department dept = a.getDepartment("Development");
         ArrayList<Employee> employees = a.getSalariesByDepartment(dept);
 
-        // Print the salaries
+        // Print salary report
         a.printSalaries(employees);
 
         // Disconnect from database

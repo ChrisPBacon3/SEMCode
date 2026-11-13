@@ -2,8 +2,8 @@ name: A workflow for my Hello World App
 on: push
 
 jobs:
-  build:
-    name: Hello world action
+  UnitTests:
+    name: Unit Tests
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -17,6 +17,50 @@ jobs:
           distribution: 'temurin'
       - name: Unit Tests
         run: mvn -Dtest=com.napier.sem.AppTest test
+
+  IntegrationTests:
+    name: Integration Tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: Set up JDK 27
+        uses: actions/setup-java@v5
+        with:
+          java-version: '27'
+          distribution: 'temurin'
+      - name: Integration Tests
+        run: |
+          docker build -t database ./db
+          docker run --name employees -dp 33060:3306 database
+          mvn -Dtest=com.napier.sem.AppIntegrationTest test
+          docker stop employees
+          docker rm employees
+          docker image rm database
+      - name: CodeCov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./target/site/jacoco/jacoco.xml
+          flags: integration-tests
+          fail_ci_if_error: false
+          verbose: true
+
+  build:
+    name: Build and Start Using docker compose
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: Set up JDK 27
+        uses: actions/setup-java@v5
+        with:
+          java-version: '27'
+          distribution: 'temurin'
       - name: Package and Run docker compose
         run: |
           mvn package -DskipTests
