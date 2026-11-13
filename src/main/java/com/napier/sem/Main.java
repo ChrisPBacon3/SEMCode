@@ -205,6 +205,41 @@ public class Main
         }
     }
 
+    /**
+     * Gets all the current employees and salaries.
+     * @return A list of all employees and salaries, or null if there is an error.
+     */
+    public ArrayList<Employee> getAllSalaries()
+    {
+        try
+        {
+            Statement stmt = con.createStatement();
+            String strSelect =
+                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary "
+                            + "FROM employees, salaries "
+                            + "WHERE employees.emp_no = salaries.emp_no AND salaries.to_date = '9999-01-01' "
+                            + "ORDER BY employees.emp_no ASC";
+            ResultSet rset = stmt.executeQuery(strSelect);
+            ArrayList<Employee> employees = new ArrayList<Employee>();
+            while (rset.next())
+            {
+                Employee emp = new Employee();
+                emp.emp_no     = rset.getInt("emp_no");
+                emp.first_name = rset.getString("first_name");
+                emp.last_name  = rset.getString("last_name");
+                emp.salary     = rset.getInt("salary");
+                employees.add(emp);
+            }
+            return employees;
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get salary details");
+            return null;
+        }
+    }
+
     public static void main(String[] args)
     {
         // Create new Application
@@ -213,8 +248,11 @@ public class Main
         // Connect to database
         a.connect();
 
-        // Get salaries for a role
-        ArrayList<Employee> employees = a.getSalariesByRole("Engineer");
+        // Extract employee salary information
+        ArrayList<Employee> employees = a.getAllSalaries();
+
+        // Test the size of the returned data - should be 240124
+        System.out.println(employees.size());
 
         // Print the salaries
         a.printSalaries(employees);
