@@ -1,0 +1,53 @@
+name: Bug Report
+description: Report a bug in the HR system.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+assignees:
+  - ChrisPBacon3
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug in the HR system.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Which release were you running?
+      placeholder: ex. v0.1.0.9
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where did you see the problem?
+      options:
+        - Running locally in IntelliJ
+        - Docker Compose
+        - GitHub Actions
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also tell us what you expected to happen.
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the steps so we can see the bug ourselves.
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Paste any console or Docker log output. This is formatted as code automatically.
+      render: shell
