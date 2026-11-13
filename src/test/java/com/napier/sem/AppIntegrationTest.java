@@ -3,11 +3,14 @@ package com.napier.sem;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class AppIntegrationTest
+/**
+ * Integration tests that run against the employees database.
+ */
+class AppIntegrationTest
 {
     static Main app;
 
@@ -15,7 +18,7 @@ public class AppIntegrationTest
     static void init()
     {
         app = new Main();
-        app.connect("localhost:33060", 30000);
+        app.connect("localhost:33060", 30_000);
     }
 
     // ---------- getEmployee ----------
@@ -23,37 +26,37 @@ public class AppIntegrationTest
     @Test
     void testGetEmployee()
     {
-        Employee emp = app.getEmployee(255530);
-        assertNotNull(emp);
-        assertEquals(255530, emp.emp_no);
-        assertEquals("Ronghao", emp.first_name);
-        assertEquals("Garigliano", emp.last_name);
-        assertEquals("Technique Leader", emp.title);
-        assertEquals(57499, emp.salary);
-        assertEquals("Development", emp.dept.dept_name);
-        assertEquals("Leon", emp.manager.first_name);
-        assertEquals("DasSarma", emp.manager.last_name);
+        Employee emp = app.getEmployee(255_530);
+        assertNotNull(emp, "Employee 255530 should exist");
+        assertEquals(255_530, emp.emp_no, "Employee number should match");
+        assertEquals("Ronghao", emp.first_name, "First name should match");
+        assertEquals("Garigliano", emp.last_name, "Last name should match");
+        assertEquals("Technique Leader", emp.title, "Current title should match");
+        assertEquals(57_499, emp.salary, "Current salary should match");
+        assertEquals("Development", emp.dept.dept_name, "Department name should match");
+        assertEquals("Leon", emp.manager.first_name, "Manager first name should match");
+        assertEquals("DasSarma", emp.manager.last_name, "Manager last name should match");
     }
 
     @Test
     void testGetEmployeeNotFound()
     {
-        assertNull(app.getEmployee(1));
+        assertNull(app.getEmployee(1), "Employee 1 should not exist");
     }
 
     @Test
     void testGetEmployeeByName()
     {
         Employee emp = app.getEmployee("Ronghao", "Garigliano");
-        assertNotNull(emp);
-        assertEquals("Ronghao", emp.first_name);
-        assertEquals("Garigliano", emp.last_name);
+        assertNotNull(emp, "Employee should be found by name");
+        assertEquals("Ronghao", emp.first_name, "First name should match");
+        assertEquals("Garigliano", emp.last_name, "Last name should match");
     }
 
     @Test
     void testGetEmployeeByNameNotFound()
     {
-        assertNull(app.getEmployee("Nobody", "Nowhere"));
+        assertNull(app.getEmployee("Nobody", "Nowhere"), "Unknown name should return null");
     }
 
     // ---------- getDepartment ----------
@@ -62,17 +65,17 @@ public class AppIntegrationTest
     void testGetDepartment()
     {
         Department dept = app.getDepartment("Development");
-        assertNotNull(dept);
-        assertEquals("d005", dept.dept_no);
-        assertEquals("Development", dept.dept_name);
-        assertEquals("Leon", dept.manager.first_name);
-        assertEquals("DasSarma", dept.manager.last_name);
+        assertNotNull(dept, "Development department should exist");
+        assertEquals("d005", dept.dept_no, "Department number should match");
+        assertEquals("Development", dept.dept_name, "Department name should match");
+        assertEquals("Leon", dept.manager.first_name, "Manager first name should match");
+        assertEquals("DasSarma", dept.manager.last_name, "Manager last name should match");
     }
 
     @Test
     void testGetDepartmentNotFound()
     {
-        assertNull(app.getDepartment("No Such Department"));
+        assertNull(app.getDepartment("No Such Department"), "Unknown department should return null");
     }
 
     // ---------- getSalariesByDepartment ----------
@@ -81,17 +84,20 @@ public class AppIntegrationTest
     void testGetSalariesByDepartment()
     {
         Department dept = app.getDepartment("Sales");
-        ArrayList<Employee> employees = app.getSalariesByDepartment(dept);
-        assertNotNull(employees);
-        assertFalse(employees.isEmpty());
+        List<Employee> employees = app.getSalariesByDepartment(dept);
+        assertFalse(employees.isEmpty(), "Sales should have employees");
         for (Employee emp : employees)
-            assertTrue(emp.salary > 0);
+        {
+            assertTrue(emp.salary > 0, "Every salary should be positive");
+        }
     }
 
     @Test
     void testGetSalariesByDepartmentNull()
     {
-        assertNull(app.getSalariesByDepartment(null));
+        List<Employee> employees = app.getSalariesByDepartment(null);
+        assertNotNull(employees, "Null department should give an empty list");
+        assertTrue(employees.isEmpty(), "Null department should have no employees");
     }
 
     // ---------- getSalariesByRole ----------
@@ -99,20 +105,19 @@ public class AppIntegrationTest
     @Test
     void testGetSalariesByRole()
     {
-        ArrayList<Employee> employees = app.getSalariesByRole("Engineer");
-        assertNotNull(employees);
-        assertFalse(employees.isEmpty());
+        List<Employee> employees = app.getSalariesByRole("Engineer");
+        assertFalse(employees.isEmpty(), "There should be engineers");
         Employee last = employees.get(employees.size() - 1);
-        assertEquals(499999, last.emp_no);
-        assertEquals(77303, last.salary);
+        assertEquals(499_999, last.emp_no, "Last engineer should be employee 499999");
+        assertEquals(77_303, last.salary, "Last engineer's salary should match");
     }
 
     @Test
     void testGetSalariesByRoleNotFound()
     {
-        ArrayList<Employee> employees = app.getSalariesByRole("No Such Role");
-        assertNotNull(employees);
-        assertTrue(employees.isEmpty());
+        List<Employee> employees = app.getSalariesByRole("No Such Role");
+        assertNotNull(employees, "Unknown role should return an empty list, not null");
+        assertTrue(employees.isEmpty(), "Unknown role should have no employees");
     }
 
     // ---------- getAllSalaries ----------
@@ -120,9 +125,8 @@ public class AppIntegrationTest
     @Test
     void testGetAllSalaries()
     {
-        ArrayList<Employee> employees = app.getAllSalaries();
-        assertNotNull(employees);
-        assertEquals(240124, employees.size());
+        List<Employee> employees = app.getAllSalaries();
+        assertEquals(240_124, employees.size(), "There should be 240124 current salaries");
     }
 
     // ---------- addEmployee ----------
@@ -131,20 +135,20 @@ public class AppIntegrationTest
     void testAddEmployee()
     {
         Employee emp = new Employee();
-        emp.emp_no = 500000;
+        emp.emp_no = 500_000;
         emp.first_name = "Kevin";
         emp.last_name = "Chalmers";
         app.addEmployee(emp);
-        emp = app.getEmployee(500000);
-        assertNotNull(emp);
-        assertEquals(500000, emp.emp_no);
-        assertEquals("Kevin", emp.first_name);
-        assertEquals("Chalmers", emp.last_name);
+        emp = app.getEmployee(500_000);
+        assertNotNull(emp, "Added employee should be found");
+        assertEquals(500_000, emp.emp_no, "Employee number should match");
+        assertEquals("Kevin", emp.first_name, "First name should match");
+        assertEquals("Chalmers", emp.last_name, "Last name should match");
     }
 
     @Test
     void testAddEmployeeNull()
     {
-        assertDoesNotThrow(() -> app.addEmployee(null));
+        assertDoesNotThrow(() -> app.addEmployee(null), "Adding a null employee should not throw");
     }
 }

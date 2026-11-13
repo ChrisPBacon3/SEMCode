@@ -4,10 +4,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class AppTest
+/**
+ * Unit tests that do not need a database connection.
+ */
+class AppTest
 {
     static Main app;
 
@@ -22,36 +26,36 @@ public class AppTest
     @Test
     void printSalariesTestNull()
     {
-        assertDoesNotThrow(() -> app.printSalaries(null));
+        assertDoesNotThrow(() -> app.printSalaries(null), "Printing null should not throw");
     }
 
     @Test
     void printSalariesTestEmpty()
     {
-        ArrayList<Employee> employees = new ArrayList<Employee>();
-        assertDoesNotThrow(() -> app.printSalaries(employees));
+        List<Employee> employees = new ArrayList<>();
+        assertDoesNotThrow(() -> app.printSalaries(employees), "Printing an empty list should not throw");
     }
 
     @Test
     void printSalariesTestContainsNull()
     {
-        ArrayList<Employee> employees = new ArrayList<Employee>();
+        List<Employee> employees = new ArrayList<>();
         employees.add(null);
-        assertDoesNotThrow(() -> app.printSalaries(employees));
+        assertDoesNotThrow(() -> app.printSalaries(employees), "Printing a list containing null should not throw");
     }
 
     @Test
     void printSalaries()
     {
-        ArrayList<Employee> employees = new ArrayList<Employee>();
+        List<Employee> employees = new ArrayList<>();
         Employee emp = new Employee();
         emp.emp_no = 1;
         emp.first_name = "Kevin";
         emp.last_name = "Chalmers";
         emp.title = "Engineer";
-        emp.salary = 55000;
+        emp.salary = 55_000;
         employees.add(emp);
-        assertDoesNotThrow(() -> app.printSalaries(employees));
+        assertDoesNotThrow(() -> app.printSalaries(employees), "Printing a normal list should not throw");
     }
 
     // ---------- displayEmployee ----------
@@ -59,14 +63,14 @@ public class AppTest
     @Test
     void displayEmployeeTestNull()
     {
-        assertDoesNotThrow(() -> app.displayEmployee(null));
+        assertDoesNotThrow(() -> app.displayEmployee(null), "Displaying null should not throw");
     }
 
     @Test
     void displayEmployeeTestEmpty()
     {
         Employee emp = new Employee();
-        assertDoesNotThrow(() -> app.displayEmployee(emp));
+        assertDoesNotThrow(() -> app.displayEmployee(emp), "Displaying an empty employee should not throw");
     }
 
     @Test
@@ -87,9 +91,9 @@ public class AppTest
         emp.first_name = "Kevin";
         emp.last_name = "Chalmers";
         emp.title = "Engineer";
-        emp.salary = 55000;
+        emp.salary = 55_000;
         emp.dept = dept;
         emp.manager = mgr;
-        assertDoesNotThrow(() -> app.displayEmployee(emp));
+        assertDoesNotThrow(() -> app.displayEmployee(emp), "Displaying a full employee should not throw");
     }
 }
