@@ -17,6 +17,14 @@ jobs:
           distribution: 'temurin'
       - name: Unit Tests
         run: mvn -Dtest=com.napier.sem.AppTest test
+      - name: CodeCov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./target/site/jacoco/jacoco.xml
+          flags: unit-tests
+          fail_ci_if_error: false
+          verbose: true
 
   IntegrationTests:
     name: Integration Tests
@@ -49,8 +57,10 @@ jobs:
           verbose: true
 
   build:
-    name: Build and Start Using docker compose
+    name: Build Run in Docker and Deploy Release
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -65,3 +75,12 @@ jobs:
         run: |
           mvn package -DskipTests
           docker compose up --abort-on-container-exit
+      - name: Deploy Release
+        if: github.ref == 'refs/heads/main'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: "latest"
+          files: |
+            ./target/*.jar
